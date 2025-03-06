@@ -111,6 +111,128 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
+const muteAudioButton = document.createElement("button");
+muteAudioButton.innerText = "Mute Audio";
+document.body.appendChild(muteAudioButton);
+
+const muteVideoButton = document.createElement("button");
+muteVideoButton.innerText = "Mute Video";
+document.body.appendChild(muteVideoButton);
+
+muteAudioButton.addEventListener("click", () => {
+    localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled;
+    muteAudioButton.innerText = localStream.getAudioTracks()[0].enabled ? "Mute Audio" : "Unmute Audio";
+});
+
+muteVideoButton.addEventListener("click", () => {
+    localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled;
+    muteVideoButton.innerText = localStream.getVideoTracks()[0].enabled ? "Mute Video" : "Unmute Video";
+});
+
+    const screenShareButton = document.createElement("button");
+screenShareButton.innerText = "Share Screen";
+document.body.appendChild(screenShareButton);
+
+screenShareButton.addEventListener("click", async () => {
+    try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        const sender = peerConnection.getSenders().find(s => s.track.kind === "video");
+        sender.replaceTrack(screenStream.getVideoTracks()[0]);
+
+        screenStream.getVideoTracks()[0].onended = () => {
+            sender.replaceTrack(localStream.getVideoTracks()[0]); // Revert to camera when screen sharing stops
+        };
+    } catch (error) {
+        console.error("Error sharing screen:", error);
+    }
+});
+
+    chatInput.addEventListener("input", () => {
+    socket.emit("typing", { to: selectedUser });
+});
+
+socket.on("typing", (data) => {
+    const typingIndicator = document.getElementById("typing-indicator");
+    typingIndicator.innerText = `${data.from} is typing...`;
+    setTimeout(() => typingIndicator.innerText = "", 2000);
+});
+socket.on("chat_message", (data) => {
+    displayMessage(data.from, data.message);
+    socket.emit("message_seen", { from: username, to: data.from });
+});
+
+socket.on("message_seen", (data) => {
+    document.querySelectorAll(".chat-message").forEach(msg => {
+        if (msg.dataset.sender === data.from) {
+            msg.innerText += " ✅"; // Add a checkmark for seen messages
+        }
+    });
+});
+function displayMessage(sender, message) {
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("chat-message");
+    messageElement.dataset.sender = sender;
+    messageElement.textContent = `${sender}: ${message}`;
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+const fileInput = document.getElementById("file-input");
+const sendFileButton = document.getElementById("send-file");
+
+sendFileButton.addEventListener("click", () => {
+    const file = fileInput.files[0];
+    if (file && selectedUser) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            socket.emit("file_message", { to: selectedUser, file: reader.result, fileName: file.name });
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+socket.on("file_message", (data) => {
+    const fileLink = document.createElement("a");
+    fileLink.href = data.file;
+    fileLink.download = data.fileName;
+    fileLink.innerText = `Download ${data.fileName}`;
+    chatMessages.appendChild(fileLink);
+});
+const endCallButton = document.getElementById("end-call");
+
+endCallButton.addEventListener("click", () => {
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+        remoteVideo.srcObject = null;
+        socket.emit("end_call", { to: partnerId });
+    }
+});
+
+socket.on("end_call", () => {
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+        remoteVideo.srcObject = null;
+    }
+});
+const endCallButton = document.getElementById("end-call");
+
+endCallButton.addEventListener("click", () => {
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+        remoteVideo.srcObject = null;
+        socket.emit("end_call", { to: partnerId });
+    }
+});
+
+socket.on("end_call", () => {
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+        remoteVideo.srcObject = null;
+    }
+});
 
     function createOffer(partnerId) {
         peerConnection.createOffer()
