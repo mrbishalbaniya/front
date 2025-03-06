@@ -174,3 +174,19 @@ video {
     font-size: 1rem;
     outline: none;
 }
+
+/* Call button */
+#call-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #28a745;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#call-button:hover {
+    background-color: #218838;
+}
