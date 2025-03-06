@@ -1,4 +1,4 @@
-/* General styles */
+/* styles.css */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
@@ -18,7 +18,35 @@ h1 {
     margin-bottom: 20px;
 }
 
-/* Video container */
+.username-container {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+#username-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    outline: none;
+    margin-right: 10px;
+}
+
+#join-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#join-button:hover {
+    background-color: #0056b3;
+}
+
 .video-container {
     display: flex;
     justify-content: center;
@@ -37,7 +65,6 @@ video {
     background-color: #000;
 }
 
-/* Online users dropdown */
 .online-users-container {
     margin-bottom: 20px;
 }
@@ -74,7 +101,14 @@ video {
     background-color: #c82333;
 }
 
-/* Chat container */
+#call-button:disabled, #end-call:disabled, #send-button:disabled, #send-file:disabled, #mute-audio:disabled, #mute-video:disabled, #screen-share:disabled{
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+#call-button:disabled:hover, #end-call:disabled:hover, #send-button:disabled:hover, #send-file:disabled:hover, #mute-audio:disabled:hover, #mute-video:disabled:hover, #screen-share:disabled:hover{
+    background-color: #ccc;
+}
+
 .chat-container {
     width: 90%;
     max-width: 600px;
@@ -127,7 +161,6 @@ video {
     background-color: #0056b3;
 }
 
-/* Control buttons */
 .control-buttons {
     margin-top: 20px;
 }
@@ -147,3 +180,11 @@ video {
 #mute-audio:hover, #mute-video:hover, #screen-share:hover {
     background-color: #5a6268;
 }
+#chat-messages div {
+        margin-bottom: 5px;
+        padding: 8px;
+        border-radius: 5px;
+    }
+
+    #chat-messages div[data-sender="You"] {
+        background-color: #e0f7fa;
