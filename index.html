@@ -3,48 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Chat</title>
+    <title>WebRTC Video Chat</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
-    <h1>WebRTC Video Chat</h1>
 
-    <!-- Username input -->
-    <div class="username-container">
-        <input type="text" id="username-input" placeholder="Enter your username">
-        <button id="join-button">Join</button>
+    <!-- App Container -->
+    <div class="app-container">
+        <h1>WebRTC Video Chat</h1>
+
+        <!-- Username Input -->
+        <div class="username-container">
+            <input type="text" id="username-input" placeholder="Enter your username">
+            <button id="join-button">Join</button>
+        </div>
+
+        <!-- Video Section -->
+        <div class="video-section">
+            <video id="localVideo" autoplay muted></video>
+            <video id="remoteVideo" autoplay></video>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-container">
+            <!-- Online Users Dropdown -->
+            <div class="online-users">
+                <label for="online-users">Online Users:</label>
+                <select id="online-users">
+                    <option value="">Select a user</option>
+                </select>
+            </div>
+
+            <!-- Call Controls -->
+            <div class="call-controls">
+                <button id="call-button" disabled>📞 Call</button>
+                <button id="end-call" disabled>🔴 End Call</button>
+            </div>
+        </div>
+
+        <!-- Chat Section -->
+        <div class="chat-container">
+            <div id="chat-messages"></div>
+            <div class="chat-input-container">
+                <input type="text" id="chat-input" placeholder="Type a message...">
+                <button id="send-button">Send</button>
+            </div>
+            <div id="typing-indicator" class="typing-indicator"></div>
+        </div>
+
+        <!-- File Sharing -->
+        <div class="file-sharing">
+            <input type="file" id="file-input">
+            <button id="send-file">📁 Send File</button>
+        </div>
+
+        <!-- Connection Status -->
+        <p id="status">Waiting for a connection...</p>
     </div>
-
-    <!-- Video container -->
-    <div class="video-container">
-        <video id="localVideo" autoplay muted></video>
-        <video id="remoteVideo" autoplay></video>
-    </div>
-
-    <!-- Online users dropdown -->
-    <div class="online-users-container">
-        <label for="online-users">Online Users:</label>
-        <select id="online-users">
-            <option value="">Select a user to chat or call</option>
-        </select>
-        <button id="call-button" disabled>Call</button>
-    </div>
-
-    <!-- Chat UI -->
-    <div class="chat-container">
-        <div id="chat-messages"></div>
-        <input type="text" id="chat-input" placeholder="Type a message...">
-        <button id="send-button">Send</button>
-    </div>
-    <button id="end-call">End Call</button>
-<input type="file" id="file-input">
-<button id="send-file">Send File</button>
-<div id="typing-indicator" style="font-style: italic; color: gray;"></div>
-
-
-    <!-- Status -->
-    <p id="status">Waiting for a connection...</p>
 
     <script src="main.js"></script>
 </body>
