@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Chat</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Include Socket.IO -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>WebRTC Video Chat</h1>
+    <div class="video-container">
+        <video id="localVideo" autoplay muted></video>
+        <video id="remoteVideo" autoplay></video>
+    </div>
+    <button id="disconnectButton">Disconnect</button>
+
+    <!-- Chat UI -->
+    <div class="chat-container">
+        <div id="chat-messages"></div>
+        <input type="text" id="chat-input" placeholder="Type a message...">
+        <button id="send-button">Send</button>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
