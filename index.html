@@ -10,11 +10,26 @@
 </head>
 <body>
     <h1>WebRTC Video Chat</h1>
+
+    <!-- Username input -->
+    <div class="username-container">
+        <input type="text" id="username-input" placeholder="Enter your username">
+        <button id="join-button">Join</button>
+    </div>
+
+    <!-- Video container -->
     <div class="video-container">
         <video id="localVideo" autoplay muted></video>
         <video id="remoteVideo" autoplay></video>
     </div>
-    <button id="disconnectButton">Disconnect</button>
+
+    <!-- Online users dropdown -->
+    <div class="online-users-container">
+        <label for="online-users">Online Users:</label>
+        <select id="online-users">
+            <option value="">Select a user to chat</option>
+        </select>
+    </div>
 
     <!-- Chat UI -->
     <div class="chat-container">

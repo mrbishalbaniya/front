@@ -134,3 +134,43 @@ video {
         width: 100%;
     }
 }
+/* Username container */
+.username-container {
+    margin-bottom: 20px;
+}
+
+#username-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    outline: none;
+}
+
+#join-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#join-button:hover {
+    background-color: #0056b3;
+}
+
+/* Online users dropdown */
+.online-users-container {
+    margin-bottom: 20px;
+}
+
+#online-users {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    outline: none;
+}
