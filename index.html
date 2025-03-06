@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Chat</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Include Socket.IO -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
@@ -29,7 +28,7 @@
         <select id="online-users">
             <option value="">Select a user to chat or call</option>
         </select>
-        <button id="call-button">Call</button>
+        <button id="call-button" disabled>Call</button>
     </div>
 
     <!-- Chat UI -->
@@ -38,6 +37,9 @@
         <input type="text" id="chat-input" placeholder="Type a message...">
         <button id="send-button">Send</button>
     </div>
+
+    <!-- Status -->
+    <p id="status">Waiting for a connection...</p>
 
     <script src="main.js"></script>
 </body>
