@@ -1,5 +1,6 @@
+// main.js
 document.addEventListener('DOMContentLoaded', () => {
-    const socket = io('https://webrtc-backend-w6fw.onrender.com'); // Backend URL
+    const socket = io('https://webrtc-backend-w6fw.onrender.com');
 
     const localVideo = document.getElementById('localVideo');
     const remoteVideo = document.getElementById('remoteVideo');
@@ -17,14 +18,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('file-input');
     const sendFileButton = document.getElementById('send-file');
     const typingIndicator = document.getElementById('typing-indicator');
+    const pairedUserDisplay = document.getElementById('paired-user');
 
     let peerConnection;
     let localStream;
     let selectedUser = null;
     let username;
     let iceCandidateQueue = [];
+    let callActive = false;
 
-    // Get user media
     async function getUserMedia() {
         try {
             localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -36,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     getUserMedia();
 
-    // Join chat
     joinButton.addEventListener('click', () => {
         username = usernameInput.value.trim();
         if (username) {
@@ -48,9 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Update online users list
     socket.on('online_users', (users) => {
-        onlineUsersDropdown.innerHTML = '<option value="">Select a user to chat or call</option>';
+        onlineUsersDropdown.innerHTML = '<option value="">Select a user to call</option>';
         users.forEach((user) => {
             if (user !== username) {
                 const option = document.createElement('option');
@@ -61,30 +61,42 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Select user for chat/call
     onlineUsersDropdown.addEventListener('change', (event) => {
         selectedUser = event.target.value;
-        callButton.disabled = !selectedUser; // Enable call button only if a user is selected
+        callButton.disabled = !selectedUser;
     });
 
-    // Initiate a call
     callButton.addEventListener('click', () => {
         if (selectedUser) {
             console.log(`Calling ${selectedUser}`);
             createPeerConnection();
             createOffer(selectedUser);
+            callActive = true;
+            endCallButton.disabled = false;
+            callButton.disabled = true;
+            chatInput.disabled = false;
+            sendButton.disabled = false;
+            fileInput.disabled = false;
+            sendFileButton.disabled = false;
         } else {
             alert('Please select a user to call.');
         }
     });
 
-    // End call
     endCallButton.addEventListener('click', () => {
         if (peerConnection) {
             peerConnection.close();
             peerConnection = null;
             remoteVideo.srcObject = null;
             socket.emit('end_call', { to: selectedUser });
+            callActive = false;
+            endCallButton.disabled = true;
+            callButton.disabled = false;
+            chatInput.disabled = true;
+            sendButton.disabled = true;
+            fileInput.disabled = true;
+            sendFileButton.disabled = true;
+            pairedUserDisplay.textContent = "";
         }
     });
 
@@ -93,18 +105,25 @@ document.addEventListener('DOMContentLoaded', () => {
             peerConnection.close();
             peerConnection = null;
             remoteVideo.srcObject = null;
+            callActive = false;
+            endCallButton.disabled = true;
+            callButton.disabled = false;
+            chatInput.disabled = true;
+            sendButton.disabled = true;
+            fileInput.disabled = true;
+            sendFileButton.disabled = true;
+            pairedUserDisplay.textContent = "";
+
         }
+        alert("Call ended");
     });
 
-    // Handle chat messages
     sendButton.addEventListener('click', () => {
         const message = chatInput.value.trim();
         if (message && selectedUser) {
             socket.emit('chat_message', { to: selectedUser, message });
             displayMessage('You', message);
             chatInput.value = '';
-        } else {
-            alert('Please select a user to chat with.');
         }
     });
 
@@ -112,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         displayMessage(data.from, data.message);
     });
 
-    // Handle typing indicators
     chatInput.addEventListener('input', () => {
         socket.emit('typing', { to: selectedUser });
     });
@@ -122,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => typingIndicator.innerText = '', 2000);
     });
 
-    // Handle file sharing
     sendFileButton.addEventListener('click', () => {
         const file = fileInput.files[0];
         if (file && selectedUser) {
@@ -142,19 +159,16 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.appendChild(fileLink);
     });
 
-    // Mute audio
     muteAudioButton.addEventListener('click', () => {
         localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled;
         muteAudioButton.innerText = localStream.getAudioTracks()[0].enabled ? 'Mute Audio' : 'Unmute Audio';
     });
 
-    // Mute video
     muteVideoButton.addEventListener('click', () => {
         localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled;
         muteVideoButton.innerText = localStream.getVideoTracks()[0].enabled ? 'Mute Video' : 'Unmute Video';
     });
 
-    // Screen sharing
     screenShareButton.addEventListener('click', async () => {
         try {
             const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
@@ -162,14 +176,13 @@ document.addEventListener('DOMContentLoaded', () => {
             sender.replaceTrack(screenStream.getVideoTracks()[0]);
 
             screenStream.getVideoTracks()[0].onended = () => {
-                sender.replaceTrack(localStream.getVideoTracks()[0]); // Revert to camera when screen sharing stops
+                sender.replaceTrack(localStream.getVideoTracks()[0]);
             };
         } catch (error) {
             console.error('Error sharing screen:', error);
         }
     });
 
-    // Display a message in the chat UI
     function displayMessage(sender, message) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('chat-message');
@@ -179,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Create peer connection
     function createPeerConnection() {
         peerConnection = new RTCPeerConnection({
             iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
@@ -198,7 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Create and send offer
     function createOffer(partnerId) {
         peerConnection.createOffer()
             .then(offer => peerConnection.setLocalDescription(offer))
@@ -208,31 +219,10 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Error creating offer:', error));
     }
 
-    // Handle signaling messages
     socket.on('signal', async (data) => {
         if (!peerConnection) {
             createPeerConnection();
         }
 
         try {
-            if (data.signal.type === 'offer') {
-                if (peerConnection.signalingState !== 'stable') {
-                    console.warn('Offer received in unstable state. Waiting...');
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.signal.offer));
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-
-                socket.emit('signal', { to: data.from, signal: { type: 'answer', answer: peerConnection.localDescription } });
-            } else if (data.signal.type === 'answer') {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.signal.answer));
-            } else if (data.signal.type === 'candidate') {
-                await peerConnection.addIceCandidate(new RTCIceCandidate(data.signal.candidate));
-            }
-        } catch (error) {
-            console.error('Error handling signal:', error);
-        }
-    });
-});
+            if (data.signal.
