@@ -3,47 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Chat</title>
+    <title>WebRTC Video Chat</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Include Socket.IO -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
     <h1>WebRTC Video Chat</h1>
 
-    <!-- Username input -->
     <div class="username-container">
         <input type="text" id="username-input" placeholder="Enter your username">
         <button id="join-button">Join</button>
     </div>
 
-    <!-- Video container -->
     <div class="video-container">
         <video id="localVideo" autoplay muted></video>
         <video id="remoteVideo" autoplay></video>
     </div>
 
-    <!-- Online users dropdown -->
     <div class="online-users-container">
         <label for="online-users">Online Users:</label>
         <select id="online-users">
-            <option value="">Select a user to chat or call</option>
+            <option value="">Select a user to call</option>
         </select>
-        <button id="call-button">Call</button>
-        <button id="end-call">End Call</button>
+        <button id="call-button" disabled>Call</button>
+        <button id="end-call" disabled>End Call</button>
+        <span id="paired-user"></span>
     </div>
 
-    <!-- Chat UI -->
     <div class="chat-container">
         <div id="chat-messages"></div>
         <div id="typing-indicator"></div>
-        <input type="text" id="chat-input" placeholder="Type a message...">
-        <button id="send-button">Send</button>
-        <input type="file" id="file-input">
-        <button id="send-file">Send File</button>
+        <input type="text" id="chat-input" placeholder="Type a message..." disabled>
+        <button id="send-button" disabled>Send</button>
+        <input type="file" id="file-input" disabled>
+        <button id="send-file" disabled>Send File</button>
     </div>
 
-    <!-- Control buttons -->
     <div class="control-buttons">
         <button id="mute-audio">Mute Audio</button>
         <button id="mute-video">Mute Video</button>
