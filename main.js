@@ -1,4 +1,4 @@
-const socket = io('https://your-backend-url.onrender.com'); // Replace with your backend URL
+const socket = io('https://webrtc-backend-w6fw.onrender.com'); // Replace with your backend URL
 
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
