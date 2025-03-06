@@ -1,4 +1,4 @@
-const socket = io('https://webrtc-backend-w6fw.onrender.com'); // Replace with your backend URL
+const socket = io('https://your-backend-url.onrender.com'); // Replace with your backend URL
 
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
@@ -61,13 +61,29 @@ function createPeerConnection(partnerId) {
             socket.emit('signal', { to: partnerId, signal: { type: 'candidate', candidate: event.candidate } });
         }
     };
+
+    // Log signaling state changes
+    peerConnection.onsignalingstatechange = () => {
+        console.log('Signaling state:', peerConnection.signalingState);
+    };
+
+    // Log ICE connection state changes
+    peerConnection.oniceconnectionstatechange = () => {
+        console.log('ICE connection state:', peerConnection.iceConnectionState);
+    };
 }
 
 // Create and send offer
 function createOffer(partnerId) {
+    if (peerConnection.signalingState !== 'stable') {
+        console.warn('Cannot create offer: Signaling state is not stable');
+        return;
+    }
+
     peerConnection.createOffer()
         .then((offer) => peerConnection.setLocalDescription(offer))
         .then(() => {
+            console.log('Sending offer:', peerConnection.localDescription);
             socket.emit('signal', { to: partnerId, signal: { type: 'offer', offer: peerConnection.localDescription } });
         })
         .catch((error) => {
@@ -83,27 +99,61 @@ socket.on('signal', (data) => {
     }
 
     if (data.signal.type === 'offer') {
+        // Check if signaling state is stable before handling the offer
+        if (peerConnection.signalingState !== 'stable') {
+            console.warn('Cannot handle offer: Signaling state is not stable');
+            return;
+        }
+
         peerConnection.setRemoteDescription(new RTCSessionDescription(data.signal.offer))
             .then(() => peerConnection.createAnswer())
             .then((answer) => peerConnection.setLocalDescription(answer))
             .then(() => {
+                console.log('Sending answer:', peerConnection.localDescription);
                 socket.emit('signal', { to: data.from, signal: { type: 'answer', answer: peerConnection.localDescription } });
             })
             .catch((error) => {
                 console.error('Error handling offer:', error);
             });
     } else if (data.signal.type === 'answer') {
+        // Ensure we're in the right signaling state to handle an answer
+        if (peerConnection.signalingState !== 'have-local-offer') {
+            console.warn('Cannot handle answer: Signaling state is not have-local-offer');
+            return;
+        }
+
         peerConnection.setRemoteDescription(new RTCSessionDescription(data.signal.answer))
+            .then(() => {
+                console.log('Remote description set, processing queued ICE candidates');
+                processIceCandidates(); // Process queued ICE candidates
+            })
             .catch((error) => {
                 console.error('Error handling answer:', error);
             });
     } else if (data.signal.type === 'candidate') {
-        peerConnection.addIceCandidate(new RTCIceCandidate(data.signal.candidate))
-            .catch((error) => {
-                console.error('Error adding ICE candidate:', error);
-            });
+        if (!peerConnection.remoteDescription) {
+            // Queue ICE candidates if remote description is not set
+            console.log('Queueing ICE candidate:', data.signal.candidate);
+            iceCandidateQueue.push(data.signal.candidate);
+        } else {
+            console.log('Adding ICE candidate:', data.signal.candidate);
+            peerConnection.addIceCandidate(new RTCIceCandidate(data.signal.candidate))
+                .catch((error) => {
+                    console.error('Error adding ICE candidate:', error);
+                });
+        }
     }
 });
+
+// Process queued ICE candidates
+function processIceCandidates() {
+    console.log('Processing queued ICE candidates:', iceCandidateQueue);
+    iceCandidateQueue.forEach(candidate => {
+        peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+            .catch(error => console.error("Error adding queued ICE candidate:", error));
+    });
+    iceCandidateQueue = []; // Clear the queue
+}
 
 // Handle chat messages
 sendButton.addEventListener('click', () => {
